@@ -1,6 +1,12 @@
 // 导入必要的模块
 import crypto from 'crypto';
 import acme from 'acme-client';
+import { getNewCertificate } from './utils/acme.js';
+import { updateAliyunCDNCert } from './utils/aliyun.js';
+
+// 加载环境变量
+import { config } from 'dotenv';
+config();
 
 // 生成阿里云 API 签名
 function generateSignature(params, secret) {
@@ -36,7 +42,7 @@ async function updateAliyunCDNCert(certData, env) {
     DomainName: env.ALIYUN_DOMAIN_NAME,
     SSLProtocol: 'on',
     CertType: 'upload',
-    CertName: env.ALIYUN_CERT_NAME || 'auto-renewed-cert',
+    CertName: `${env.ALIYUN_CERT_NAME || 'auto-renewed-cert'}-${new Date().getTime()}`,
     SSLPub: certData.certificate,
     SSLPri: certData.privateKey,
   };
