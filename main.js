@@ -101,19 +101,53 @@ async function getNewCertificate(env) {
   };
 }
 
+// 更新证书的主函数
+async function updateCertificate(env) {
+  try {
+    // 获取新证书
+    const certData = await getNewCertificate(env);
+    
+    // 更新阿里云 CDN 证书
+    const result = await updateAliyunCDNCert(certData, env);
+    
+    console.log('证书更新成功:', result);
+    return { success: true, result };
+  } catch (error) {
+    console.error('证书更新失败:', error);
+    return { success: false, error: error.message };
+  }
+}
+
 // 主处理函数
 export default {
   async scheduled(event, env, ctx) {
-    try {
-      // 获取新证书
-      const certData = await getNewCertificate(env);
-      
-      // 更新阿里云 CDN 证书
-      const result = await updateAliyunCDNCert(certData, env);
-      
-      console.log('证书更新成功:', result);
-    } catch (error) {
-      console.error('证书更新失败:', error);
+    await updateCertificate(env);
+  },
+
+  async fetch(request, env, ctx) {
+    // 检查请求方法
+    if (request.method !== 'POST') {
+      return new Response('Method not allowed', { status: 405 });
     }
+
+    // 检查认证头
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+
+    // 验证 token
+    const token = authHeader.substring(7); // 去掉 'Bearer ' 前缀
+    if (token !== env.ALIYUN_ACCESS_KEY_SECRET) {
+      return new Response('Invalid token', { status: 401 });
+    }
+
+    // 执行证书更新
+    const result = await updateCertificate(env);
+
+    // 返回结果
+    return new Response(JSON.stringify(result), {
+      headers: { 'Content-Type': 'application/json' },
+    });
   },
 };
