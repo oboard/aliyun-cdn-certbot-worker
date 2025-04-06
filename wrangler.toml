@@ -1,12 +1,14 @@
 name = "aliyun-cdn-certbot-worker"
 main = "main.js"
-compatibility_date = "2024-04-06"
+
+compatibility_flags = [ "nodejs_compat" ]
+compatibility_date = "2024-09-23"
 
 [triggers]
 crons = ["0 0 * * *"]  # 每天午夜运行一次
 
-[dependencies]
-acme-client = "^4.2.5"
+[build]
+command = "npm install"
 
 [vars]
 # 阿里云配置
