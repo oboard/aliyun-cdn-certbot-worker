@@ -1,0 +1,17 @@
+{
+  "name": "aliyun-cdn-certbot-worker",
+  "version": "1.0.0",
+  "description": "A Cloudflare Worker that automatically renews SSL certificates for Aliyun CDN using Let's Encrypt",
+  "main": "main.js",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "dependencies": {
+    "croner": "^7.1.0",
+    "acme-client": "^4.2.5"
+  },
+  "devDependencies": {
+    "wrangler": "^4.7.2"
+  }
+} 

@@ -18,11 +18,17 @@ A Cloudflare Worker that automatically renews SSL certificates for Aliyun CDN us
   - Access Key with appropriate permissions
   - Domain configured in CDN
 - Domain DNS managed by Aliyun DNS
+- Node.js and npm installed
 
 ## Configuration
 
 1. Clone this repository
-2. Copy `.env.example` to `.env` and fill in your configuration:
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Copy `.env.example` to `.env` and fill in your configuration:
 
 ```bash
 # Aliyun Configuration
@@ -39,7 +45,7 @@ LE_DIRECTORY_URL=https://acme-v02.api.letsencrypt.org/directory  # Production
 # LE_DIRECTORY_URL=https://acme-staging-v02.api.letsencrypt.org/directory  # Staging
 ```
 
-3. Set up environment variables in Cloudflare:
+4. Set up environment variables in Cloudflare:
 
 ```bash
 wrangler secret put ALIYUN_ACCESS_KEY_ID
@@ -61,7 +67,7 @@ wrangler login
 
 3. Deploy the worker:
 ```bash
-wrangler deploy
+npm run deploy
 ```
 
 ## Usage
@@ -69,7 +75,7 @@ wrangler deploy
 The worker will automatically run on the configured schedule (default: daily at midnight). You can also trigger it manually:
 
 ```bash
-wrangler dev
+npm run dev
 ```
 
 ## Testing
@@ -93,6 +99,11 @@ Before deploying to production, it's recommended to test with Let's Encrypt's st
 - Verify DNS records are properly configured
 - Ensure Aliyun Access Key has correct permissions
 - Test with staging environment first
+- If you encounter dependency issues, try:
+  ```bash
+  npm install
+  npm run deploy
+  ```
 
 ## License
 
