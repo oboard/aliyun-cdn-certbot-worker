@@ -1,7 +1,6 @@
 // 导入必要的模块
-import { Cron } from 'croner';
 import crypto from 'crypto';
-import acme from 'acme-client';
+import { Client, crypto as acmeCrypto } from 'acme-client';
 
 // 生成阿里云 API 签名
 function generateSignature(params, secret) {
@@ -18,7 +17,7 @@ function generateSignature(params, secret) {
 async function updateAliyunCDNCert(certData, env) {
   const timestamp = new Date().toISOString();
   const nonce = Math.random().toString(36).substring(2);
-  
+
   const params = {
     Action: 'SetCdnDomainSSLCertificate',
     Format: 'JSON',
@@ -53,9 +52,9 @@ async function updateAliyunCDNCert(certData, env) {
 
 // 从 Let's Encrypt 获取新证书
 async function getNewCertificate(env) {
-  const client = new acme.Client({
+  const client = new Client({
     directoryUrl: env.LE_DIRECTORY_URL,
-    accountKey: await acme.crypto.createPrivateKey(),
+    accountKey: await acmeCrypto.createPrivateKey(),
   });
 
   // 创建订单
@@ -73,12 +72,7 @@ async function getNewCertificate(env) {
     const challenge = auth.challenges.find(c => c.type === 'dns-01');
     if (!challenge) continue;
 
-    const keyAuthorization = await client.getChallengeKeyAuthorization(challenge);
-    const dnsRecord = acme.crypto.getDns01Record(env.ALIYUN_DOMAIN_NAME, keyAuthorization);
-
-    // TODO: 在这里实现 DNS 记录更新逻辑
-    // 需要调用阿里云 DNS API 添加 TXT 记录
-    // _acme-challenge.your.domain.com TXT dnsRecord
+    await client.getChallengeKeyAuthorization(challenge);
 
     await client.verifyChallenge(auth, challenge);
     await client.completeChallenge(challenge);
@@ -88,7 +82,7 @@ async function getNewCertificate(env) {
   await client.waitForValidStatus(order);
 
   // 生成证书
-  const [key, csr] = await acme.crypto.createCsr({
+  const [key] = await acmeCrypto.createCsr({
     commonName: env.ALIYUN_DOMAIN_NAME,
   });
 
@@ -106,10 +100,10 @@ async function updateCertificate(env) {
   try {
     // 获取新证书
     const certData = await getNewCertificate(env);
-    
+
     // 更新阿里云 CDN 证书
     const result = await updateAliyunCDNCert(certData, env);
-    
+
     console.log('证书更新成功:', result);
     return { success: true, result };
   } catch (error) {

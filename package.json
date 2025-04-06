@@ -8,7 +8,6 @@
     "dev": "wrangler dev"
   },
   "dependencies": {
-    "croner": "^5.0.0",
     "acme-client": "^4.2.5",
     "node-forge": "^1.3.1"
   },
